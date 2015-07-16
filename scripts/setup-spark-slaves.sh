@@ -23,5 +23,5 @@ function setupSlaves {
 	done
 }
 
-echo "setup hadoop slaves"
+echo "setup spark slaves"
 setupSlaves
