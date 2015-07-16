@@ -6,7 +6,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	r = numNodes..1
 	(r.first).downto(r.last).each do |i|
 		config.vm.define "node-#{i}" do |node|
-			node.vm.box = "chef/centos-6.6"
+			node.vm.box = "rrrrrok/centos-6.6-VBGuest4.3.28"
 			node.vm.provider "virtualbox" do |v|
 			  v.name = "node#{i}"
 			  v.customize ["modifyvm", :id, "--memory", "2048"]
@@ -44,6 +44,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 			node.vm.provision "shell" do |s|
 				s.path = "scripts/setup-spark-slaves.sh"
 				s.args = "-s 3 -t #{numNodes}"
+			end
+
+			# start up HADOOP on node 1
+			if i == 1
+				node.vm.provision "shell", inline: <<-SHELL
+					sudo $HADOOP_PREFIX/bin/hdfs namenode -format myhadoop
+					sudo $HADOOP_PREFIX/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs start namenode
+					sudo $HADOOP_PREFIX/sbin/hadoop-daemons.sh --config $HADOOP_CONF_DIR --script hdfs start datanode
+					SHELL
+			end
+
+			# start up YARN on node 2
+			if i == 2
+				node.vm.provision "shell", inline: <<-SHELL
+					sudo $HADOOP_YARN_HOME/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start resourcemanager
+					sudo $HADOOP_YARN_HOME/sbin/yarn-daemons.sh --config $HADOOP_CONF_DIR start nodemanager
+					sudo $HADOOP_YARN_HOME/sbin/yarn-daemon.sh start proxyserver --config $HADOOP_CONF_DIR
+					sudo $HADOOP_PREFIX/sbin/mr-jobhistory-daemon.sh start historyserver --config $HADOOP_CONF_DIR
+					SHELL
 			end
 		end
 	end
