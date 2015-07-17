@@ -9,7 +9,7 @@ Currently using Hadoop 2.6, Spark 1.4.1
 Ideal for development cluster on a laptop with at least 4GB of memory.
 
 1. node1 : HDFS NameNode + Spark Master
-2. node2 : YARN ResourceManager + JobHistoryServer + ProxyServer
+2. node1 : YARN ResourceManager + JobHistoryServer + ProxyServer
 3. node3 : HDFS DataNode + YARN NodeManager + Spark Slave
 4. node4 : HDFS DataNode + YARN NodeManager + Spark Slave
 

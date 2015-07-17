@@ -17,7 +17,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 				node.vm.network :private_network, ip: "10.211.55.1#{i}"
 			end
 			node.vm.hostname = "node#{i}"
-			node.vm.provision "centos-firewall", type: "shell", path: "scripts/setup-centos.sh"
 			node.vm.provision "centos-hosts", type: "shell" do |s|
 				s.path = "scripts/setup-centos-hosts.sh"
 				s.args = "-t #{numNodes}"
@@ -46,20 +45,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 				s.args = "-s 3 -t #{numNodes}"
 			end
 
+			# setup the firewall
+			node.vm.provision "firewall", type: "shell" do |s| 
+				s.path = "scripts/setup-firewall.sh"
+				s.args = "#{i}"
+			end
+
 			# the main nodes, 1 and 2, are set up last so it's safe to issue 
 			# HADOOP and YARN setup commands by the time they are provisioning
 
-			# start up HADOOP on node 1
+			# start up HADOOP and YARN on node 1
 			if i == 1
 				node.vm.provision "hadoop-startup", type: "shell", inline: <<-SHELL
 					sudo $HADOOP_PREFIX/bin/hdfs namenode -format myhadoop
 					sudo $HADOOP_PREFIX/sbin/hadoop-daemon.sh --config $HADOOP_CONF_DIR --script hdfs start namenode
 					sudo $HADOOP_PREFIX/sbin/hadoop-daemons.sh --config $HADOOP_CONF_DIR --script hdfs start datanode
 					SHELL
-			end
-
-			# start up YARN on node 2
-			if i == 2
+			
 				node.vm.provision "yarn-startup", type: "shell", inline: <<-SHELL
 					sudo $HADOOP_YARN_HOME/sbin/yarn-daemon.sh --config $HADOOP_CONF_DIR start resourcemanager
 					sudo $HADOOP_YARN_HOME/sbin/yarn-daemons.sh --config $HADOOP_CONF_DIR start nodemanager
