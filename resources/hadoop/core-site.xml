@@ -21,4 +21,11 @@
   <name>fs.defaultFS</name>
   <value>hdfs://node1</value>
  </property>
+
+  <property>
+    <name>hadoop.rpc.socket.factory.class.default</name>
+    <value>org.apache.hadoop.net.StandardSocketFactory</value>
+  <final>true</final>
+  </property>
+
 </configuration>

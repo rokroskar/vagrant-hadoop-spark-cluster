@@ -18,7 +18,7 @@ function configureFirewall {
 		iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 		iptables -A INPUT -i lo -j ACCEPT
 		iptables -A INPUT -m iprange --src-range 10.211.55.101-10.211.55.105 -j ACCEPT
-		#iptables -A INPUT -p tcp --dport ssh -j ACCEPT
+		iptables -A INPUT -p tcp --dport ssh -j ACCEPT
 		iptables -P INPUT DROP
 		service iptables save
 		echo "configured local firewall"
