@@ -3,6 +3,32 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	numNodes = 4
+
+	# First set up the client -- different enough to do it outside the loop
+	config.vm.define "client" do |client|
+		client.vm.box = "rrrrrok/centos-6.6-VBGuest4.3.28"
+		client.vm.provider "virtualbox" do |v|
+			v.name = "client"
+			v.customize ["modifyvm", :id, "--memory", "2048"]
+		end
+		client.vm.network :private_network, ip: "10.211.55.100"
+
+		client.vm.hostname = "client"
+
+		client.vm.provision "centos-hosts", type: "shell" do |s|
+				s.path = "scripts/setup-centos-hosts.sh"
+				s.args = "-t #{numNodes}"
+		end
+
+		client.vm.provision "java", type: "shell", path: "scripts/setup-java.sh"
+		client.vm.provision "hadoop-config", type: "shell", path: "scripts/setup-hadoop.sh"
+		client.vm.provision "spark", type: "shell", path: "scripts/setup-spark.sh"
+	end
+
+
+	# now set up the rest of the cluster
+	
+	
 	r = numNodes..1
 	(r.first).downto(r.last).each do |i|
 		config.vm.define "node-#{i}" do |node|
@@ -21,7 +47,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 				s.path = "scripts/setup-centos-hosts.sh"
 				s.args = "-t #{numNodes}"
 			end
-			if i == 2
+			if i == 2 || i == 5
 				node.vm.provision "shell" do |s|
 					s.path = "scripts/setup-centos-ssh.sh"
 					s.args = "-s 3 -t #{numNodes}"
