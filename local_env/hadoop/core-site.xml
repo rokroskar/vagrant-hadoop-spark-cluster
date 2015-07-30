@@ -29,6 +29,6 @@
 
   <property>
     <name>hadoop.socks.server</name>
-    <value>localhost:9998</value>
-    </property>
+    <value>node2:9999</value>
+  </property>
 </configuration>
